@@ -1,19 +1,22 @@
 import java.util.Random;
 
 /**
- * 跳跃表简单实现
+ * 双向链表实现跳跃表
  */
-class SkipListNode {
-    int val;
-    SkipListNode[] forwards;
+public class SkipList2 {
 
-    public SkipListNode(int val, int level) {
-        this.val = val;
-        this.forwards = new SkipListNode[level];
+    private class SkipListNode {
+        int val;
+        SkipListNode[] forwards;
+        SkipListNode[] backwards;
+
+        public SkipListNode(int val, int level) {
+            this.val = val;
+            this.forwards = new SkipListNode[level];
+            this.backwards = new SkipListNode[level];
+        }
     }
-}
 
-public class SkipList {
     private static final int MAX_LEVEL = 16;
     private static final double PROBABILITY = 0.5;
 
@@ -38,6 +41,12 @@ public class SkipList {
             }
             newNode.forwards[i] = current.forwards[i];
             current.forwards[i] = newNode;
+
+            // 更新双向链表的指针
+            if (newNode.forwards[i] != null) {
+                newNode.forwards[i].backwards[i] = newNode;
+            }
+            newNode.backwards[i] = current;
         }
     }
 
@@ -63,7 +72,15 @@ public class SkipList {
                 current = current.forwards[i];
             }
             if (current.forwards[i] != null && current.forwards[i].val == target) {
+                SkipListNode toDelete = current.forwards[i];
                 current.forwards[i] = current.forwards[i].forwards[i];
+                if (current.forwards[i] != null) {
+                    current.forwards[i].backwards[i] = current;
+                }
+                // 如果删除的节点是最高层的节点，则更新跳跃表的层数
+                if (i == levelCount - 1 && toDelete.forwards[i] == null) {
+                    levelCount--;
+                }
             }
         }
     }
